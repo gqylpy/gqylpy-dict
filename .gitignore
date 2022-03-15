@@ -32,7 +32,7 @@ var/
 .installed.cfg
 *.egg
 .mypy_cache/
-# .idea/
+.idea
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
