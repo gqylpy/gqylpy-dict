@@ -13,45 +13,96 @@
 ─██████████████─████████████████───────██████───────██████████████─██████───────────────██████───────
 ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
-Copyright © 2022 GQYLPY. 竹永康 <gqylpy@outlook.com>
+Copyright (c) 2022 GQYLPY <http://gqylpy.com>. All rights reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+─────────────────────────────────────────────────────────────────────────────────────────────────────
 
-    https://www.apache.org/licenses/LICENSE-2.0
+Lines 61 through 101 is licensed under the Apache-2.0:
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        https://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────
+
+All other code is licensed under the WTFPL:
+
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                    Version 2, December 2004
+
+ Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+
+ Everyone is permitted to copy and distribute verbatim or modified
+ copies of this license document, and changing it is allowed as long
+ as the name is changed.
+
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+  0. You just DO WHAT THE FUCK YOU WANT TO.
+─────────────────────────────────────────────────────────────────────────────────────────────────────
 """
 import re
-from typing import Iterator
+import builtins
 
-unique = 'b4526bbd82644a2db26dbd60b039c79d'
+from typing import Iterator, Any, Union, NoReturn, Optional
+
+unique = b'GQYLPY, \xe6\x94\xb9\xe5\x8f\x98\xe4\xb8\x96\xe7\x95\x8c\xe3\x80\x82'
 
 
-class HideClassInfo(type):
-    __name__ = dict.__name__
+class DisguiseClass(type):
+    __module__ = 'builtins'
 
-    def __getattribute__(cls, name: str):
-        if name == '__class__':
-            return dict.__class__
-        # Masquerading as a built-in thing will not serialize properly.
-        if name == '__module__':
-            return dict.__module__
-        return super().__getattribute__(name)
+    def __new__(mcs, __name__: str, __bases__: tuple, __dict__: dict):
+        try:
+            __disguise_class__: type = __dict__['__disguise_class__']
+        except KeyError:
+            raise AttributeError(
+                f'an instance of "{mcs.__name__}" must '
+                'define "__disguise_class__" attribute, '
+                'use to specify the class to disguise.'
+            )
+
+        if not isinstance(__disguise_class__, type):
+            raise TypeError(f'"__disguise_class__" is not a class.')
+
+        cls = type.__new__(mcs, __disguise_class__.__name__, __bases__, __dict__)
+
+        mcs.__name__ = type.__name__
+        cls.__module__ = __disguise_class__.__module__
+
+        # Warning: modifying this property will not create a portable serialized representation.
+        # cls.__qualname__ = __disguise_class__.__qualname__
+        # _pickle.PicklingError: Can't pickle <class 'dict'>: it's not the same object as builtins.dict
+
+        if getattr(builtins, __disguise_class__.__name__, None) is __disguise_class__:
+            setattr(builtins, __name__, cls)
+
+        return cls
 
     def __str__(cls) -> str:
-        return str(dict)
+        return str(cls.__disguise_class__)
+
+    def __hash__(cls):
+        return hash(cls.__disguise_class__)
+
+    def __eq__(cls, o):
+        return True if o is cls.__disguise_class__ else super().__eq__(o)
 
 
-class GqylpyDict(dict, metaclass=HideClassInfo):
+builtins.DisguiseClass = DisguiseClass
 
-    __isabstractmethod__ = False
-    # The attribute is for compatibility abc.ABCMeta.
+
+class GqylpyDict(dict, metaclass=DisguiseClass):
+    __disguise_class__ = dict
 
     def __init__(self, __data__=None, **kw):
         if __data__.__class__ is dict:
@@ -66,7 +117,7 @@ class GqylpyDict(dict, metaclass=HideClassInfo):
         if __data__.__class__ is dict:
             return dict.__new__(cls)
 
-        if __data__.__class__ in (list, Iterator, tuple, set):
+        if isinstance(__data__, (list, tuple, set, Iterator)):
             return [GqylpyDict(v) for v in __data__]
 
         return __data__
@@ -81,25 +132,16 @@ class GqylpyDict(dict, metaclass=HideClassInfo):
         del self[name]
 
     def __deepcopy__(self, memo):
-        """
-        This method must be implemented,  otherwise
-        `KeyError: '__deepcopy__'` will appear when
-        `copy.deepcopy (GqylpyDict obj)` is called.
-        """
         return GqylpyDict(self)
 
     def __getstate__(self):
-        """This method is for compatibility pickle module."""
         return self
 
     def __setstate__(self, state):
-        """This method is for compatibility pickle module."""
+        pass
 
     def __hash__(self):
-        return -1
-
-    def __eq__(self, other):
-        return super().__eq__(other)
+        return -2
 
     def update(self, __data__: dict = None, **kw):
         if isinstance(__data__, dict):
@@ -108,26 +150,14 @@ class GqylpyDict(dict, metaclass=HideClassInfo):
             _data = kw
         else:
             x: str = __data__.__class__.__name__
-            raise TypeError(f'Updated object must be "dict", not a "{x}".')
+            raise TypeError(f'updated object must be a "dict", not "{x}".')
 
-        if not isinstance(__data__, GqylpyDict):
+        if __data__.__class__ is not GqylpyDict:
             __data__ = GqylpyDict(__data__)
 
         super().update(__data__)
 
-    @property
-    def deepkeys(self) -> list:
-        return self.get_deepkeys(self)
-
-    @property
-    def deepvalues(self) -> list:
-        return self.get_deepvalues(self)
-
-    @property
-    def deepitems(self) -> list:
-        return self.get_deepitems(self)
-
-    def deepget(self, keypath: str, default=None, *, ignore: list = []):
+    def deepget(self, keypath: str, default=None, *, ignore: tuple = ()):
         value, keypath = self, keypath[:-1] if keypath and keypath[-1] == ']' else keypath
 
         for key in re.split(r'\.|\[|][.\[]', keypath):
@@ -158,17 +188,17 @@ class GqylpyDict(dict, metaclass=HideClassInfo):
         last_key: str = int_key(yes_keys.pop())
 
         while yes_keys:
-            data = self.deepget('.'.join(yes_keys), unique)
+            data = GqylpyDict.deepget(self, '.'.join(yes_keys), unique)
             key: str = int_key(yes_keys.pop())
 
-            if data != unique:
+            if data is not unique:
                 try:
                     next_key = no_keys[0]
                 except IndexError:
                     next_key = last_key
                 if next_key.__class__ is str and data.__class__ is not GqylpyDict \
                         or next_key.__class__ is int and data.__class__ is not list:
-                    data = self.deepget('.'.join(yes_keys)) if yes_keys else self
+                    data = GqylpyDict.deepget(self, '.'.join(yes_keys)) if yes_keys else self
                     no_keys.insert(0, key)
                 break
             no_keys.insert(0, key)
@@ -185,9 +215,13 @@ class GqylpyDict(dict, metaclass=HideClassInfo):
             data = next_data
         set_next_data(data, last_key, value)
 
+    def deepcontain(self, keypath: str) -> bool:
+        return False if self.deepget(keypath, unique) is unique else True
+
     def deepsetdefault(self, keypath: str, value):
         result = self.deepget(keypath, unique)
-        if result == unique:
+        if result is unique:
+            value = GqylpyDict(value)
             self.deepset(keypath, value)
             return value
         return result
@@ -200,72 +234,73 @@ class GqylpyDict(dict, metaclass=HideClassInfo):
         for key, value in self.get_deepitems(data):
             self.deepset(key, value)
 
-    def deepcontain(self, keypath: str) -> bool:
-        return True if self.deepget(keypath, unique) != unique else False
-
-    @classmethod
-    def get_deepkeys(cls, data: dict, _keypath: str = None, _keypaths: list = None) -> list:
-        keypaths = _keypaths or []
-
-        for key, value in data.items():
+    def deepkeys(self, _keypath: str = None):
+        for key, value in self.items():
             keypath = f'{_keypath}.{key}' if _keypath else key
 
             if isinstance(value, dict):
-                cls.get_deepkeys(value, keypath, keypaths)
-            elif value.__class__ in (list, Iterator, tuple, set):
+                yield from GqylpyDict.deepkeys(value, keypath)
+            elif isinstance(value, (list, tuple, set, Iterator)):
                 for i, v in enumerate(value):
                     if isinstance(v, dict):
-                        cls.get_deepkeys(v, f'{keypath}[{i}]', keypaths)
+                        yield from GqylpyDict.deepkeys(v, f'{keypath}[{i}]')
                     else:
-                        keypaths.append(f'{keypath}[{i}]')
+                        yield f'{keypath}[{i}]'
             else:
-                keypaths.append(keypath)
+                yield keypath
 
-        return keypaths
-
-    @classmethod
-    def get_deepvalues(cls, data: dict, _keypath: str = None, _keypaths: list = None) -> list:
-        keypaths = _keypaths or []
-
-        for key, value in data.items():
+    def deepvalues(self, _keypath: str = None):
+        for key, value in self.items():
             keypath = f'{_keypath}.{key}' if _keypath else key
 
             if isinstance(value, dict):
-                cls.get_deepvalues(value, keypath, keypaths)
-            elif value.__class__ in (list, Iterator, tuple, set):
+                yield from GqylpyDict.deepvalues(value, keypath)
+            elif isinstance(value, (list, tuple, set, Iterator)):
                 for i, v in enumerate(value):
                     if isinstance(v, dict):
-                        cls.get_deepvalues(v, f'{keypath}[{i}]', keypaths)
+                        yield from GqylpyDict.deepvalues(v, f'{keypath}[{i}]')
                     else:
-                        keypaths.append(v)
+                        yield v
             else:
-                keypaths.append(value)
+                yield value
 
-        return keypaths
-
-    @classmethod
-    def get_deepitems(cls, data: dict, _keypath: str = None, _keypaths: list = None) -> list:
-        keypaths = _keypaths or []
-
-        for key, value in data.items():
+    def deepitems(self, _keypath: str = None):
+        for key, value in self.items():
             keypath = f'{_keypath}.{key}' if _keypath else key
 
             if isinstance(value, dict):
-                cls.get_deepitems(value, keypath, keypaths)
-            elif value.__class__ in (list, Iterator, tuple, set):
+                yield from GqylpyDict.deepitems(value, keypath)
+            elif isinstance(value, (list, tuple, set, Iterator)):
                 for i, v in enumerate(value):
                     if isinstance(v, dict):
-                        cls.get_deepitems(v, f'{keypath}[{i}]', keypaths)
+                        yield from GqylpyDict.deepitems(v, f'{keypath}[{i}]')
                     else:
-                        keypaths.append((f'{keypath}[{i}]', v))
+                        yield f'{keypath}[{i}]', v
             else:
-                keypaths.append((keypath, value))
-
-        return keypaths
+                yield keypath, value
 
     @classmethod
-    def get_deepvalue(cls, data: dict, keypath: str, default=None, *, ignore: list = []):
+    def get_deepkeys(cls, data: dict):
+        return cls.deepkeys(data)
+
+    @classmethod
+    def get_deepvalues(cls, data: dict):
+        return cls.deepvalues(data)
+
+    @classmethod
+    def get_deepitems(cls, data: dict):
+        return cls.deepitems(data)
+
+    @classmethod
+    def get_deepvalue(cls, data: dict, keypath: str, default=None, *, ignore: tuple = ()):
         return cls.deepget(data, keypath, default, ignore=ignore)
+
+    @classmethod
+    def set_deepvalue(cls, data: dict, keypath: str, value):
+        cls.deepset(data, keypath, value)
+
+    __isabstractmethod__ = False
+    # Compatibility with "abc.ABCMeta".
 
 
 def int_key(key: str) -> str or int:

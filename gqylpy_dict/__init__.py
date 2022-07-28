@@ -13,21 +13,27 @@
 ─██████████████─████████████████───────██████───────██████████████─██████───────────────██████───────
 ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
-Copyright © 2022 GQYLPY. 竹永康 <gqylpy@outlook.com>
+Copyright (c) 2022 GQYLPY <http://gqylpy.com>. All rights reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This file is licensed under the WTFPL:
 
-    https://www.apache.org/licenses/LICENSE-2.0
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                    Version 2, December 2004
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+ Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+
+ Everyone is permitted to copy and distribute verbatim or modified
+ copies of this license document, and changing it is allowed as long
+ as the name is changed.
+
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+  0. You just DO WHAT THE FUCK YOU WANT TO.
 """
-__version__ = 1, 0, 'dev2'
+__version__ = 1, 0, 'alpha3'
+__author__ = '竹永康 <gqylpy@outlook.com>'
+__source__ = 'https://github.com/gqylpy/gqylpy-dict'
 
 
 class GqylpyDict(dict):
@@ -48,19 +54,16 @@ class GqylpyDict(dict):
     def __delattr__(self, key):
         del self[key]
 
-    @property
     def deepkeys(self) -> list:
         return self.get_deepkeys(self)
 
-    @property
     def deepvalues(self) -> list:
         return self.get_deepvalues(self)
 
-    @property
     def deepitems(self) -> list:
         return self.get_deepitems(self)
 
-    def deepget(self, keypath: str, default: 'Any' = None, *, ignore: list = None) -> 'Any':
+    def deepget(self, keypath: str, default: 'Any' = None, *, ignore: 'Union[tuple, list]' = None) -> 'Any':
         """Get a value based on @param(keypath).
         @param keypath
             A key path, e.g.: {'a': [{'b': 'B'}]}.sget('a[0].b') == 'B'
@@ -120,11 +123,15 @@ class GqylpyDict(dict):
         """Get all keypath and value of @param(data)."""
 
     @classmethod
-    def get_deepvalue(cls, data: dict, keypath: str, default=None, *, ignore: list = None) -> 'Any':
+    def get_deepvalue(cls, data: dict, keypath: str, default=None, *, ignore: 'Union[tuple, list]' = None) -> 'Any':
         return cls.deepget(data, keypath, default, ignore=ignore)
 
+    @classmethod
+    def set_deepvalue(cls, data: dict, keypath: str, value):
+        cls.deepset(data, keypath, value)
 
-class _______G________Q________Y_______L_______P_______Y_______:
+
+class ______歌______琪______怡______玲______萍______云______:
     import sys
 
     __import__(f'{__name__}.g {__name__[7:]}')
@@ -134,4 +141,4 @@ class _______G________Q________Y_______L_______P_______Y_______:
 
 gdict = GqylpyDict
 
-from typing import Any
+from typing import Any, Union

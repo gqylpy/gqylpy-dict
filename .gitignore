@@ -1,14 +1,8 @@
-.gitreview
-*.pyc
-*~
-/.push
-/nohup.out
-/log/pid
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 
 # C extensions
 *.so
@@ -32,7 +26,7 @@ var/
 .installed.cfg
 *.egg
 .mypy_cache/
-.idea
+.idea/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -110,3 +104,6 @@ ENV/
 # netCDF Files
 *.nc
 conda-requirements.txt
+
+changelog.yml
+self_test.py
