@@ -31,7 +31,7 @@ This file is licensed under the WTFPL:
 
   0. You just DO WHAT THE FUCK YOU WANT TO.
 """
-__version__ = 1, 0, 'alpha3'
+__version__ = 1, 0, 'alpha4'
 __author__ = '竹永康 <gqylpy@outlook.com>'
 __source__ = 'https://github.com/gqylpy/gqylpy-dict'
 
@@ -53,6 +53,9 @@ class GqylpyDict(dict):
 
     def __delattr__(self, key):
         del self[key]
+
+    def copy(self) -> 'GqylpyDict':
+        pass
 
     def deepkeys(self) -> list:
         return self.get_deepkeys(self)
@@ -131,7 +134,7 @@ class GqylpyDict(dict):
         cls.deepset(data, keypath, value)
 
 
-class ______歌______琪______怡______玲______萍______云______:
+class _xe6_xad_x8c_xe7_x90_xaa_xe6_x80_xa1_xe7_x8e_xb2_xe8_x90_x8d_xe4_xba_x91:
     import sys
 
     __import__(f'{__name__}.g {__name__[7:]}')
