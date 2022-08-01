@@ -17,7 +17,7 @@ Copyright (c) 2022 GQYLPY <http://gqylpy.com>. All rights reserved.
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
-Lines 61 through 106 is licensed under the Apache-2.0:
+Lines 62 through 107 is licensed under the Apache-2.0:
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ All other code is licensed under the WTFPL:
    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
   0. You just DO WHAT THE FUCK YOU WANT TO.
+
 ─────────────────────────────────────────────────────────────────────────────────────────────────────
 """
 import re
@@ -123,7 +124,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             return dict.__new__(cls)
 
         if isinstance(__data__, (list, tuple, set, Iterator)):
-            return [GqylpyDict(v) for v in __data__]
+            return [cls(v) for v in __data__]
 
         return __data__
 
