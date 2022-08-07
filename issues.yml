@@ -1,0 +1,241 @@
+- issue: "考虑同时支持接收单个值"
+  location: "GqylpyDict.deepget 参数 ignore"
+  create: 2022-08-01
+  labels: question
+  status: NotProcess
+  description: "
+    在多数情况下我们想忽略的值都是单个的，如果能直接传入，而不是每次都包装一层列表，岂不更好。
+  "
+  process:
+    2022-08-02: "
+      若传入的单个值本身是一个列表或元组，将出现问题，这种情况下我们无法判断开发者想传入的值是单个还
+      是多个。因此我们不能这样做。
+    "
+
+- issue: "通过值解压的方式实例化得到的不是一个字典对象"
+  location: "GqylpyDict.__init__"
+  create: 2022-08-01
+  labels: question
+  status: NotProcess
+  description: "
+    内置dict通过值解压的方式实例化得到的是一个字典对象，而gdict通过值解压的方式实例化得到的是一个列
+    表对象。且看下面的代码运行结果：
+
+      >>> dict((x, y) for x, y in [('a', 'A'),  ('b', 'B')])
+      {'a': 'A', 'b': 'B'}
+
+      >>> gdict((x, y) for x, y in [('a', 'A'), ('b', 'B')])
+      [['a', 'A'], ['b', 'B']]
+
+    我们希望它们得到同样的结果，无论在任何情况下。gdict得到列表对象肯定是错误的，这是一个严重的问题，
+    它使我们对gdict的理念产生了偏移，我们希望gdict在任何时候都有着与dict相同的特性。
+  "
+  process:
+    2022-08-02: "
+      发现这样的问题我们反思，这在设计之初大意了，我们没有考虑到值解压的方式创建字典。gdict实例化的
+      核心在于深度转换dict，将dict转换为gdict，深度的理解是同时会转换dict内层的dict。
+
+      深度转换dict 与 值解压实例化gdict 是冲突的。
+
+      gdict实例化是一个递归的过程，当传入一个字典以外的容器类对象或Iterator对象时，它会分解容器或
+      Iterator并依次进入递归层，并在所有递归层结束后返回一个列表对象，且看下面的代码：
+
+        def __new__(cls, __data__={}, **kw):
+            if isinstance(__data__, (list, tuple, set, Iterator)):
+                return [cls(v) for v in __data__]
+
+      介于此设计，做了深度转换dict，就无法再做值解压实例化gdict，我们不考虑给gdict增加任何流程控
+      制参数。如一定要做值解压实例化gdict，可通过下面的方式：
+
+        >>> gdict(dict((x, y) for x, y in [('a', 'A'), ('b', 'B')]))
+        {'a': 'A', 'b': 'B'}
+    "
+
+- issue: "是否可以做到gdict覆盖内嵌dict"
+  location: "No location"
+  create: 2022-08-02
+  labels: question
+  status: UnableProcess
+  description: "
+    用gdict覆盖内嵌dict，这样以后在全局创建例如 {'a': 'A'} 即可直接得到gdict实例，而无需再做转换。
+  "
+  process:
+    2022-08-02: "
+      初步尝试，从builtins中篡改dict。尝试未成功，如下代码：
+
+        >>> import builtins
+        >>> import gqylpy_dict
+        >>> builtins.dict = gqylpy_dict.gdict
+
+      此时查看dict，出现一个奇特的现象：
+
+        >>> dict.__qualname__
+        'GqylpyDict'
+        >>> dict().__class__.__qualname__
+        'dict'
+        >>> {}.__class__.__qualname__
+        'dict'
+
+      全局dict已经指向gdict，但调用全局dict得到的却仍是内嵌dict的实例。这样看来，调用全局dict
+      并不是调用builtins.dict。Python是一门高深的语言，你永远也猜不到它的底层设计。
+    "
+    2022-08-03: "
+      尝试方案二，从globals中篡改dict：
+
+        >>> import gqylpy_dict
+        >>> globals()['dict'] = gqylpy_dict.gdict
+
+      此时查看dict：
+
+        >>> dict.__qualname__
+        'GqylpyDict'
+        >>> dict().__class__.__qualname__
+        'GqylpyDict'
+        >>> {}.__class__.__qualname__
+        'dict'
+
+      看起来比上一次成功，全局dict已经指向gdict，调用全局dict也得到gdict实例，但使用 {} 的方式
+      仍得到内嵌dict实例。
+    "
+
+- issue: "向gdict实例中写入的dict实例没有被转换为gdict实例"
+  location: "GqylpyDict.__setattr__"
+  create: 2022-08-02
+  labels: question
+  status: Processed
+  description: "
+    问题模拟代码：
+
+      >>> d = gdict()
+      >>> d.a = {}
+      >>> d.a.__class__.__qualname__
+      'dict'
+
+    我们希望 d.a.__class__.__qualname__ 得到的是 'GqylpyDict'。
+  "
+  process:
+    2022-08-02: "
+      解决方案：重写__setitem__方法，如下代码：
+
+        def __setitem__(self, name, value):
+            dict.__setitem__(self, name, GqylpyDict(value))
+
+      首先要说明，__setattr__方法内部调用__setitem__。我们将要写入的数据做一次转换，如果数据是
+      dict的实例，将被转换为gdict实例，包括内层数据。
+    "
+    2022-08-03: "
+      就在刚刚，我们发现重写__setitem__方法使deepset方法失效了，它无法正确深度设置值。进一步排
+      查，问题是出在初始化函数中，重写__setitem__方法让这个问题浮现，关键代码：
+
+        if isinstance(__data__, dict):
+            return dict.__new__(cls)
+
+      如果__dict__是gdict的实例，这条判断语句也是成立的，因为gdict继承dict。这将会创建新的gdict
+      实例，这是错误的，deepset的底层设计不能创建新的gdict实例。为此，我们再次调整代码：
+
+        if __data__.__class__ is dict:
+            return dict.__new__(cls)
+
+      这样做可以有效避免在调用deepset时重复创建gdict实例的问题，但也引申出新的可能出现的问题：若传
+      入的__data__是其它继承dict类的实例，将不会被转换为gdict实例。我们暂不考虑使用例如这样的语句
+      来避免此问题：
+
+        if isinstance(__data__, dict) and __data__.__class__ is not gdict:
+            return dict.__new__(cls)
+    "
+
+- issue: "deepsetdefault执行后应该返回原值还是转为gdict实例后的值"
+  location: "GqylpyDict.deepsetdefault"
+  create: 2022-08-02
+  labels: question
+  status: Processed
+  description: "
+    gdict.deepsetdefault 与 dict.setdefault 功能相似，值不存在则设置值并返回值。若设置的值
+    是一个dict实例且不存在，我们会先将这个dict实例转为gdict实例再执行设置，从而保证gdict实例的正
+    确性（gdict实例内层绝不包含dict实例，这是我们对gdict的理念，也是原则）。那么在返回值时，我们
+    应该返回原dict实例还是转换后的gdict实例呢，问题的关键在于此。
+  "
+  process:
+    2022-08-02: "
+      根据dict.setdefault的使用经验，往往开发者在调用setdefault后会根据返回值作进一步处理。放到
+      gdict.deepsetdefault，如果该返回值与gdict实例中的值不是同一个值（即返回值是dict实例，而
+      gdict实例中的值是gdict实例），将可能会出现无法预期的结果。
+
+      因此我们决定返回值为转换为gdict实例后的值。但也要注意，这样做会导致另一个问题，我们择重：
+
+        >>> x = {'x': 'X'}
+
+        >>> data = gdict()
+        >>> x2 = data.deepsetdefault('a.b', x)
+
+        >>> x2 == x == data.a.b
+        True
+
+        >>> x2 is x
+        False
+
+        >>> x2 is data.a.b
+        True
+    "
+
+- issue: "是否考虑提供deepdel的方法"
+  location: "No location"
+  create: 2022-08-04
+  labels: question
+  status: NotProcess
+  description: "
+    既然提供了deepget,deepset方法，那deepdel方法怎能少呢。
+  "
+  process:
+    2022-08-05: "
+      deepdel的使用场景几乎为0，不考虑提供。
+    "
+
+- issue: "字典对象不能使用set去重"
+  location: GqylpyDict.__hash__
+  create: 2022-08-05
+  labels: question
+  status: Processed
+  description: "
+    这是大的问题，在一些场景中我们必须对字典对象去重，这就得引入或现写非哈希的去重算法，极为不便。如
+    果能直接使用set去重，将大幅提高代码开发效率及可读性。我们能否做到让gdict对象使用set去重？
+  "
+  process:
+    2022-08-05: "
+      如果让set能对字典对象去重，将会出现一个更大的问题。首先你必须清楚set为什么不能对字典对象去重，
+      因为字典是一个可变的容器，将字典对象加入到set中并不影响它可变的特性。设想一种情况，两个不相等
+      的字典对象加入到了set中，之后这两个字典对象经过变化值相等了，那这问题就大了，set中的值不唯一
+      了，这颠覆set的理念。
+
+      说了这么多是为了先给你建立一个正确的认知。然后呢我们就喜欢干这种颠覆认知的事情，我们完全可以做
+      到让gdict对象使用set去重。
+
+      你必须了解下面两件事：
+        哈希理念：两个约相等的对象的哈希值一定相等，反之未必。
+        set去重流程：先调用对象的__hash__方法，若返回值相等，再调用__eq__方法...
+
+      结合哈希理念与set去重流程，我们从__hash__方法入手：
+
+        def __hash__(self):
+            return -2
+
+      编写__hash__方法并固定返回值，这意味着gdict对象是可哈希的了，并且哈希值始终相等。此时gdict
+      对象已经可以使用set去重了，它将忽略哈希检查，始终检查值是否相等。
+
+        >>> a1 = gdict(a='A1')
+        >>> a2 = gdict(a='A2')
+        >>> xx = gdict(a='A1')
+        >>> {a1, a2, xx}
+        {{'a': 'A1'}, {'a': 'A2'}}
+
+      开头我们提到过这样做会出现一个更大的问题，会使set中的值不唯一，如下代码展示：
+
+        >>> a1 = gdict(a='A1')
+        >>> a2 = gdict(a='A2')
+        >>> x = {a1, a2}
+        >>> a2.a = 'A1'
+        >>> x
+        {{'a': 'A1'}, {'a': 'A1'}}
+
+      因此，gdict对象可以使用set去重，但要格外小心。
+    "

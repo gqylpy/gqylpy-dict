@@ -6,7 +6,9 @@
 
 # gqylpy-dict
 
-> `gqylpy-dict` is equal to `builtins.dict`, but is not `builtins.dict`.
+> 
+
+<kbd>pip3 install gqylpy_dict</kbd>
 
 ```python
 >>> from gqylpy_dict import gdict

@@ -111,7 +111,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
     __masquerade_class__ = dict
 
     def __init__(self, __data__=None, **kw):
-        if isinstance(__data__, dict):
+        if __data__.__class__ is dict:
             kw and __data__.update(kw)
         else:
             __data__ = kw
@@ -120,10 +120,10 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             self[name] = GqylpyDict(value)
 
     def __new__(cls, __data__={}, **kw):
-        if isinstance(__data__, dict):
+        if __data__.__class__ is dict:
             return dict.__new__(cls)
 
-        if isinstance(__data__, (list, tuple, set, Iterator)):
+        if isinstance(__data__, (list, tuple, set, frozenset, Iterator)):
             return [cls(v) for v in __data__]
 
         return __data__
@@ -136,6 +136,9 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
 
     def __delattr__(self, name):
         del self[name]
+
+    def __setitem__(self, name, value):
+        dict.__setitem__(self, name, GqylpyDict(value))
 
     def __deepcopy__(self, memo=None):
         return GqylpyDict(self)
@@ -155,19 +158,12 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             x[k] = v
         return x
 
-    def update(self, __data__: dict = None, **kw):
-        if isinstance(__data__, dict):
-            kw and __data__.update(kw)
-        elif __data__ is None:
-            __data__ = kw
-        else:
+    def update(self, __data__: dict = {}, **kw):
+        try:
+            super().update(GqylpyDict(__data__, **kw))
+        except (TypeError, ValueError):
             x: str = __data__.__class__.__name__
             raise TypeError(f'updated object must be a "dict", not "{x}".')
-
-        if __data__.__class__ is not GqylpyDict:
-            __data__ = GqylpyDict(__data__)
-
-        super().update(__data__)
 
     def deepget(self, keypath: str, default=None, *, ignore: tuple | list = ()):
         keypath, value = keypath[:-1] if keypath and keypath[-1] == ']' else keypath, self
@@ -196,44 +192,39 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
         return default if value in ignore else value
 
     def deepset(self, keypath: str, value):
-        yes_keys, no_keys = re.split(r'[.\[]', keypath), []
-        last_key: str = int_key(yes_keys.pop())
+        existing_keys, nonexistent_keys = re.split(r'[.\[]', keypath), []
+        last_key: str = int_key(existing_keys.pop())
 
-        while yes_keys:
-            data = GqylpyDict.deepget(self, '.'.join(yes_keys), unique)
-            key: str = int_key(yes_keys.pop())
+        while existing_keys:
+            data = GqylpyDict.deepget(self, '.'.join(existing_keys), unique)
+            key: str = int_key(existing_keys.pop())
 
             if data is not unique:
                 try:
-                    next_key = no_keys[0]
+                    next_key = nonexistent_keys[0]
                 except IndexError:
                     next_key = last_key
                 if (
-                        next_key.__class__ is     str        and
-                        data.__class__     is not GqylpyDict or
-                        next_key.__class__ is     int        and
-                        data.__class__     is not list
+                        next_key.__class__ is str and not isinstance(data, dict)
+                                                  or
+                        next_key.__class__ is int and data.__class__ is not list
                 ):
                     data = GqylpyDict.deepget(
-                        self, '.'.join(yes_keys)) if yes_keys else self
-                    no_keys.insert(0, key)
+                        self, '.'.join(existing_keys)) if existing_keys else self
+                    nonexistent_keys.insert(0, key)
                 break
-            no_keys.insert(0, key)
+            nonexistent_keys.insert(0, key)
         else:
             data = self
 
-        for i, key in enumerate(no_keys):
+        for i, key in enumerate(nonexistent_keys):
             try:
-                next_key = no_keys[i + 1]
+                next_key = nonexistent_keys[i + 1]
             except IndexError:
                 next_key = last_key
             next_data = GqylpyDict() if next_key.__class__ is str else []
-            set_next_data(data, key, next_data)
-            data = next_data
+            data = set_next_data(data, key, next_data)
         set_next_data(data, last_key, value)
-
-    def deepcontain(self, keypath: str) -> bool:
-        return False if self.deepget(keypath, unique) is unique else True
 
     def deepsetdefault(self, keypath: str, value):
         result = self.deepget(keypath, unique)
@@ -242,6 +233,9 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             self.deepset(keypath, value)
             return value
         return result
+
+    def deepcontain(self, keypath: str) -> bool:
+        return False if self.deepget(keypath, unique) is unique else True
 
     def deepsetdefaultdict(self, defaultdict: dict):
         for key, value in self.get_deepitems(defaultdict):
@@ -297,30 +291,29 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
                 yield keypath, value
 
     @classmethod
-    def get_deepvalue(
+    def getdeep(
             cls, data: dict, keypath: str,
             default=None, *, ignore: tuple | list = ()
     ):
         return cls.deepget(data, keypath, default, ignore=ignore)
 
     @classmethod
-    def set_deepvalue(cls, data: dict, keypath: str, value):
+    def setdeep(cls, data: dict, keypath: str, value):
         cls.deepset(data, keypath, value)
 
     @classmethod
-    def get_deepkeys(cls, data: dict):
+    def keysdeep(cls, data: dict):
         return cls.deepkeys(data)
 
     @classmethod
-    def get_deepvalues(cls, data: dict):
+    def valuesdeep(cls, data: dict):
         return cls.deepvalues(data)
 
     @classmethod
-    def get_deepitems(cls, data: dict):
+    def itemsdeep(cls, data: dict):
         return cls.deepitems(data)
 
     __isabstractmethod__ = False
-    # Compatibility with "abc.ABCMeta".
 
 
 def int_key(key: str) -> int | str:
@@ -344,3 +337,4 @@ def set_next_data(data: dict | list, key: int | str, value):
             for _ in range(abs(key) - len(data) - 1):
                 data.append(None)
             data.insert(0, value)
+    return data[key]
