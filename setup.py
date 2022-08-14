@@ -6,7 +6,7 @@ setuptools.setup(
     version='.'.join(str(n) for n in g.__version__),
     author=g.__author__.split()[0],
     author_email=g.__author__.split()[1][1:-1],
-    license='WTFPL',
+    license='WTFPL,Apache-2.0',
     url='http://gqylpy.com',
     project_urls={'Source': g.__source__},
     long_description=open('README.md', encoding='utf8').read(),
@@ -16,7 +16,6 @@ setuptools.setup(
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE',
         'Operating System :: OS Independent',
         'Topic :: Text Processing :: Indexing',
         'Topic :: Utilities',

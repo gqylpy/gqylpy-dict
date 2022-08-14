@@ -239,3 +239,12 @@
 
       因此，gdict对象可以使用set去重，但要格外小心。
     "
+
+- issue: "仅希望获取某几个值"
+  location: GqylpyDict.deepget
+  create: 2022-08-14
+  labels: question
+  status: Pending
+  description: "
+    在某些情况下我们希望从字典中取到的值是某几个特定值中的其中一个，如果不是，将返回默认特定值。
+  "

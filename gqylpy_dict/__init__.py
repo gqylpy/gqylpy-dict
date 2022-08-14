@@ -31,7 +31,7 @@ This file is licensed under the WTFPL:
 
   0. You just DO WHAT THE FUCK YOU WANT TO.
 """
-__version__ = 1, 0, 'alpha6'
+__version__ = 1, 0
 __author__ = '竹永康 <gqylpy@outlook.com>'
 __source__ = 'https://github.com/gqylpy/gqylpy-dict'
 
@@ -191,7 +191,7 @@ class GqylpyDict(dict):
             >>> d
             {'a': [{'b': 'B', 'c': 'C'}]}
 
-            >>> gdict.setdeep(d, 'a[1].f', 'F')
+            >>> gdict.setdeep(d, 'd[1].f', 'F')
             >>> d
             {'a': [{'b': 'B', 'c': 'C'}], 'd': [None, {'f': 'F'}]}
         """
