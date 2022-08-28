@@ -165,7 +165,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             x: str = __data__.__class__.__name__
             raise TypeError(f'updated object must be a "dict", not "{x}".')
 
-    def deepget(self, keypath: str, default=None, *, ignore: tuple | list = ()):
+    def deepget(self, keypath: str, default=None, *, ignore: 'tuple | list' = ()):
         keypath, value = keypath[:-1] if keypath and keypath[-1] == ']' else keypath, self
 
         for key in re.split(r'\.|\[|][.\[]', keypath):
@@ -293,7 +293,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
     @classmethod
     def getdeep(
             cls, data: dict, keypath: str,
-            default=None, *, ignore: tuple | list = ()
+            default=None, *, ignore: 'tuple | list' = ()
     ):
         return cls.deepget(data, keypath, default, ignore=ignore)
 
@@ -316,14 +316,14 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
     __isabstractmethod__ = False
 
 
-def int_key(key: str) -> int | str:
+def int_key(key: str) -> 'int | str':
     try:
         return int(key[:-1])
     except ValueError:
         return key
 
 
-def set_next_data(data: dict | list, key: int | str, value):
+def set_next_data(data: 'dict | list', key: 'int | str', value):
     try:
         data[key] = value
     except IndexError:
