@@ -15,9 +15,9 @@
 
 Copyright (c) 2022 GQYLPY <http://gqylpy.com>. All rights reserved.
 
-─────────────────────────────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────
 
-Lines 62 through 107 is licensed under the Apache-2.0:
+Lines 62 through 110 is licensed under the Apache-2.0:
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ Lines 62 through 107 is licensed under the Apache-2.0:
     See the License for the specific language governing permissions and
     limitations under the License.
 
-─────────────────────────────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────
 
 All other code is licensed under the WTFPL:
 
@@ -49,12 +49,12 @@ All other code is licensed under the WTFPL:
 
   0. You just DO WHAT THE FUCK YOU WANT TO.
 
-─────────────────────────────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────
 """
 import re
 import builtins
 
-from typing import Iterator
+from typing import Iterator, Generator, Any, Union, Optional
 
 unique = b'GQYLPY, \xe6\x94\xb9\xe5\x8f\x98\xe4\xb8\x96\xe7\x95\x8c\xe3\x80\x82'
 
@@ -75,9 +75,11 @@ class MasqueradeClass(type):
             )
 
         if not isinstance(__masquerade_class__, type):
-            raise TypeError(f'"__masquerade_class__" is not a class.')
+            raise TypeError('"__masquerade_class__" is not a class.')
 
-        cls = type.__new__(mcs, __masquerade_class__.__name__, __bases__, __dict__)
+        cls = type.__new__(
+            mcs, __masquerade_class__.__name__, __bases__, __dict__
+        )
 
         mcs.__name__ = type.__name__
         cls.__module__ = __masquerade_class__.__module__
@@ -86,7 +88,8 @@ class MasqueradeClass(type):
         # Warning: Modified this attribute will cannot
         # create the portable serialized representation.
 
-        if getattr(builtins, __masquerade_class__.__name__, None) is __masquerade_class__:
+        if getattr(builtins, __masquerade_class__.__name__, None) is \
+                __masquerade_class__:
             setattr(builtins, __name__, cls)
 
         return cls
@@ -110,7 +113,7 @@ builtins.MasqueradeClass = MasqueradeClass
 class GqylpyDict(dict, metaclass=MasqueradeClass):
     __masquerade_class__ = dict
 
-    def __init__(self, __data__=None, **kw):
+    def __init__(self, __data__=None, /, **kw):
         if __data__.__class__ is dict:
             kw and __data__.update(kw)
         else:
@@ -119,7 +122,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
         for name, value in __data__.items():
             self[name] = GqylpyDict(value)
 
-    def __new__(cls, __data__={}, **kw):
+    def __new__(cls, __data__={}, /, **kw):
         if __data__.__class__ is dict:
             return dict.__new__(cls)
 
@@ -128,45 +131,47 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
 
         return __data__
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         return self[name]
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: Any) -> None:
         self[name] = value
 
-    def __delattr__(self, name):
+    def __delattr__(self, name: str) -> None:
         del self[name]
 
-    def __setitem__(self, name, value):
+    def __setitem__(self, name: Any, value: Any) -> None:
         dict.__setitem__(self, name, GqylpyDict(value))
 
-    def __deepcopy__(self, memo=None):
+    def __deepcopy__(self, memo=None) -> 'GqylpyDict':
         return GqylpyDict(self)
-
-    def __getstate__(self):
-        return self
-
-    def __setstate__(self, state):
-        pass
 
     def __hash__(self):
         return -2
 
-    def copy(self):
+    def copy(self) -> 'GqylpyDict':
         x = GqylpyDict()
         for k, v in self.items():
             x[k] = v
         return x
 
-    def update(self, __data__: dict = {}, **kw):
+    def update(self, __data__: dict = {}, /, **kw) -> None:
         try:
             super().update(GqylpyDict(__data__, **kw))
         except (TypeError, ValueError):
             x: str = __data__.__class__.__name__
             raise TypeError(f'updated object must be a "dict", not "{x}".')
 
-    def deepget(self, keypath: str, default=None, *, ignore: 'tuple | list' = ()):
-        keypath, value = keypath[:-1] if keypath and keypath[-1] == ']' else keypath, self
+    def deepget(
+            self,
+            keypath: str,
+            /,
+            default: Optional[Any]      = None,
+            *,
+            ignore:  Union[tuple, list] = ()
+    ) -> Any:
+        keypath = keypath[:-1] if keypath and keypath[-1] == ']' else keypath
+        value = self
 
         for key in re.split(r'\.|\[|][.\[]', keypath):
             if value.__class__ is list:
@@ -191,7 +196,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
 
         return default if value in ignore else value
 
-    def deepset(self, keypath: str, value):
+    def deepset(self, keypath: str, value: Any) -> None:
         existing_keys, nonexistent_keys = re.split(r'[.\[]', keypath), []
         last_key: str = int_key(existing_keys.pop())
 
@@ -209,8 +214,8 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
                                                   or
                         next_key.__class__ is int and data.__class__ is not list
                 ):
-                    data = GqylpyDict.deepget(
-                        self, '.'.join(existing_keys)) if existing_keys else self
+                    data = GqylpyDict.deepget(self, '.'.join(existing_keys)) \
+                        if existing_keys else self
                     nonexistent_keys.insert(0, key)
                 break
             nonexistent_keys.insert(0, key)
@@ -226,7 +231,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             data = set_next_data(data, key, next_data)
         set_next_data(data, last_key, value)
 
-    def deepsetdefault(self, keypath: str, value):
+    def deepsetdefault(self, keypath: str, value: Any) -> Any:
         result = self.deepget(keypath, unique)
         if result is unique:
             value = GqylpyDict(value)
@@ -234,18 +239,18 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             return value
         return result
 
-    def deepcontain(self, keypath: str) -> bool:
+    def deepcontain(self, keypath: str, /) -> bool:
         return False if self.deepget(keypath, unique) is unique else True
 
-    def deepsetdefaultdict(self, defaultdict: dict):
+    def deepsetdefaultdict(self, defaultdict: dict, /) -> None:
         for key, value in self.get_deepitems(defaultdict):
             self.deepsetdefault(key, value)
 
-    def deepupdatedict(self, data: dict):
+    def deepupdatedict(self, data: dict, /) -> None:
         for key, value in self.get_deepitems(data):
             self.deepset(key, value)
 
-    def deepkeys(self, __keypath__=None):
+    def deepkeys(self, __keypath__=None) -> Generator:
         for key, value in self.items():
             keypath = f'{__keypath__}.{key}' if __keypath__ else key
 
@@ -260,7 +265,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             else:
                 yield keypath
 
-    def deepvalues(self, __keypath__=None):
+    def deepvalues(self, __keypath__=None) -> Generator:
         for key, value in self.items():
             keypath = f'{__keypath__}.{key}' if __keypath__ else key
 
@@ -275,7 +280,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             else:
                 yield value
 
-    def deepitems(self, __keypath__=None):
+    def deepitems(self, __keypath__=None) -> Generator:
         for key, value in self.items():
             keypath = f'{__keypath__}.{key}' if __keypath__ else key
 
@@ -292,38 +297,46 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
 
     @classmethod
     def getdeep(
-            cls, data: dict, keypath: str,
-            default=None, *, ignore: 'tuple | list' = ()
-    ):
+            cls,
+            data:    dict,
+            keypath: str,
+            default: Optional[Any]      = None,
+            *,
+            ignore:  Union[tuple, list] = ()
+    ) -> Any:
         return cls.deepget(data, keypath, default, ignore=ignore)
 
     @classmethod
-    def setdeep(cls, data: dict, keypath: str, value):
+    def setdeep(cls, data: dict, keypath: str, value: Any) -> None:
         cls.deepset(data, keypath, value)
 
     @classmethod
-    def keysdeep(cls, data: dict):
+    def keysdeep(cls, data: dict) -> Generator:
         return cls.deepkeys(data)
 
     @classmethod
-    def valuesdeep(cls, data: dict):
+    def valuesdeep(cls, data: dict) -> Generator:
         return cls.deepvalues(data)
 
     @classmethod
-    def itemsdeep(cls, data: dict):
+    def itemsdeep(cls, data: dict) -> Generator:
         return cls.deepitems(data)
 
     __isabstractmethod__ = False
 
 
-def int_key(key: str) -> 'int | str':
+def int_key(key: str, /) -> Union[int, str]:
     try:
         return int(key[:-1])
     except ValueError:
         return key
 
 
-def set_next_data(data: 'dict | list', key: 'int | str', value):
+def set_next_data(
+        data:  Union[dict, list],
+        key:   Union[int, str],
+        value: Any
+) -> Any:
     try:
         data[key] = value
     except IndexError:

@@ -31,14 +31,14 @@ This file is licensed under the WTFPL:
 
   0. You just DO WHAT THE FUCK YOU WANT TO.
 """
-__version__ = 1, 0, 1
+__version__ = 1, 1
 __author__ = '竹永康 <gqylpy@outlook.com>'
 __source__ = 'https://github.com/gqylpy/gqylpy-dict'
 
 
 class GqylpyDict(dict):
 
-    def __new__(cls, __data__={}, **kw):
+    def __new__(cls, __data__={}, /, **kw):
         if __data__.__class__ is dict:
             return dict.__new__(cls)
 
@@ -47,7 +47,7 @@ class GqylpyDict(dict):
 
         return __data__
 
-    def __init__(self, __data__=None, **kw):
+    def __init__(self, __data__=None, /, **kw):
         if __data__.__class__ is dict:
             kw and __data__.update(kw)
         else:
@@ -56,16 +56,16 @@ class GqylpyDict(dict):
         for name, value in __data__.items():
             self[name] = GqylpyDict(value)
 
-    def __getattr__(self, key):
+    def __getattr__(self, key: str) -> 'Any':
         return self[key]
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key: str, value: 'Any') -> None:
         self[key] = value
 
-    def __delattr__(self, key):
+    def __delattr__(self, key: str) -> None:
         del self[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         dict.__setitem__(self, key, GqylpyDict(value))
 
     def __hash__(self):
@@ -77,13 +77,14 @@ class GqylpyDict(dict):
         added to instance of "set". Ignore the hash check and always check that
         the values are equal.
 
-        Background story: https://github.com/gqylpy/gqylpy-dict/issues/7
+        Background story https://github.com/gqylpy/gqylpy-dict/issues/7
         """
         return -2
 
     def deepget(
             self,
             keypath:  str,
+            /,
             default: 'Optional[Any]'      = None,
             *,
             ignore:  'Union[list, tuple]' = None
@@ -134,7 +135,7 @@ class GqylpyDict(dict):
             {'a': [{'b': 'B', 'c': 'X'}]}
         """
 
-    def deepcontain(self, keypath: str) -> bool:
+    def deepcontain(self, keypath: str, /) -> bool:
         """
         @param keypath: Hierarchy keys, use "." connection.
 

@@ -9,6 +9,9 @@ setuptools.setup(
     license='WTFPL,Apache-2.0',
     url='http://gqylpy.com',
     project_urls={'Source': g.__source__},
+    description='''
+        基于内置 dict，它是对内置 dict 的增强。dict 能做的它能做，dict 不能做的它更能做。
+    '''.strip(),
     long_description=open('README.md', encoding='utf8').read(),
     long_description_content_type='text/markdown',
     packages=[g.__name__],

@@ -1,5 +1,5 @@
 [<img alt="LOGO" src="http://www.gqylpy.com/static/img/favicon.ico" height="21" width="21"/>](http://www.gqylpy.com)
-[![Version](https://img.shields.io/pypi/v/gqylpy_dict)](https://pypi.org/project/gqylpy_dict)
+[![Release](https://img.shields.io/github/release/gqylpy/gqylpy-dict.svg?style=flat-square")](https://github.com/gqylpy/gqylpy-dict/releases/latest)
 [![Python Versions](https://img.shields.io/pypi/pyversions/gqylpy_dict)](https://pypi.org/project/gqylpy_dict)
 [![License](https://img.shields.io/pypi/l/gqylpy_dict)](https://github.com/gqylpy/gqylpy-dict/blob/master/LICENSE)
 [![Downloads](https://pepy.tech/badge/gqylpy_dict/month)](https://pepy.tech/project/gqylpy_dict)
