@@ -23,4 +23,7 @@ False
 >>> x = gdict(x)
 >>> x.a[0].b
 'B'
+
+>>> x.deepget('a[0].b')
+'B'
 ```

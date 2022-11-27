@@ -1,18 +1,29 @@
 """
-─────────────────────────────────────────────────────────────────────────────────────────────────────
-─██████████████─██████████████───████████──████████─██████─────────██████████████─████████──████████─
-─██░░░░░░░░░░██─██░░░░░░░░░░██───██░░░░██──██░░░░██─██░░██─────────██░░░░░░░░░░██─██░░░░██──██░░░░██─
-─██░░██████████─██░░██████░░██───████░░██──██░░████─██░░██─────────██░░██████░░██─████░░██──██░░████─
-─██░░██─────────██░░██──██░░██─────██░░░░██░░░░██───██░░██─────────██░░██──██░░██───██░░░░██░░░░██───
-─██░░██─────────██░░██──██░░██─────████░░░░░░████───██░░██─────────██░░██████░░██───████░░░░░░████───
-─██░░██──██████─██░░██──██░░██───────████░░████─────██░░██─────────██░░░░░░░░░░██─────████░░████─────
-─██░░██──██░░██─██░░██──██░░██─────────██░░██───────██░░██─────────██░░██████████───────██░░██───────
-─██░░██──██░░██─██░░██──██░░██─────────██░░██───────██░░██─────────██░░██───────────────██░░██───────
-─██░░██████░░██─██░░██████░░████───────██░░██───────██░░██████████─██░░██───────────────██░░██───────
-─██░░░░░░░░░░██─██░░░░░░░░░░░░██───────██░░██───────██░░░░░░░░░░██─██░░██───────────────██░░██───────
-─██████████████─████████████████───────██████───────██████████████─██████───────────────██████───────
-─────────────────────────────────────────────────────────────────────────────────────────────────────
+The `gqylpy_dict` based on the built-in `dict`, it is an enhancement of the
+built-in `dict`. It can do anything `dict` can do, and can do more what `dict`
+cannot do.
 
+    >>> from gqylpy_dict import gdict
+
+    >>> gdict == dict
+    True
+
+    >>> gdict is dict
+    False
+
+    >>> x = {'a': [{'b': 'B'}]}
+    >>> x = gdict(x)
+    >>> x.a[0].b
+    'B'
+
+    >>> x.deepget('a[0].b')
+    'B'
+
+    @version: 1.1.1
+    @author: 竹永康 <gqylpy@outlook.com>
+    @source: https://github.com/gqylpy/gqylpy-dict
+
+────────────────────────────────────────────────────────────────────────────────
 Copyright (c) 2022 GQYLPY <http://gqylpy.com>. All rights reserved.
 
 This file is licensed under the WTFPL:
@@ -31,9 +42,7 @@ This file is licensed under the WTFPL:
 
   0. You just DO WHAT THE FUCK YOU WANT TO.
 """
-__version__ = 1, 1
-__author__ = '竹永康 <gqylpy@outlook.com>'
-__source__ = 'https://github.com/gqylpy/gqylpy-dict'
+from typing import Optional, Iterator, Union, Any
 
 
 class GqylpyDict(dict):
@@ -56,16 +65,16 @@ class GqylpyDict(dict):
         for name, value in __data__.items():
             self[name] = GqylpyDict(value)
 
-    def __getattr__(self, key: str) -> 'Any':
+    def __getattr__(self, key: str) -> Any:
         return self[key]
 
-    def __setattr__(self, key: str, value: 'Any') -> None:
+    def __setattr__(self, key: str, value: Any) -> None:
         self[key] = value
 
     def __delattr__(self, key: str) -> None:
         del self[key]
 
-    def __setitem__(self, key, value) -> None:
+    def __setitem__(self, key: str, value: Any) -> None:
         dict.__setitem__(self, key, GqylpyDict(value))
 
     def __hash__(self):
@@ -73,22 +82,22 @@ class GqylpyDict(dict):
         The first thing you have to understand is that the built-in dict object
         is unhashable. Don't be misled!
 
-        We do this mainly so that instances of "GqylpyDict" can be able to be
-        added to instance of "set". Ignore the hash check and always check that
+        We do this mainly so that instances of `GqylpyDict` can be able to be
+        added to instance of `set`. Ignore the hash check and always check that
         the values are equal.
 
-        Background story https://github.com/gqylpy/gqylpy-dict/issues/7
+        Backstory https://github.com/gqylpy/gqylpy-dict/issues/7
         """
         return -2
 
     def deepget(
             self,
-            keypath:  str,
+            keypath: str,
             /,
-            default: 'Optional[Any]'      = None,
+            default: Optional[Any]      = None,
             *,
-            ignore:  'Union[list, tuple]' = None
-    ) -> 'Any':
+            ignore:  Union[list, tuple] = None
+    ) -> Any:
         """
         @param keypath: Hierarchy keys, use "." connection.
         @param default: Default return value if the keypath does not found.
@@ -103,7 +112,7 @@ class GqylpyDict(dict):
             'C'
         """
 
-    def deepset(self, keypath: str, value: 'Any') -> None:
+    def deepset(self, keypath: str, value: Any) -> None:
         """
         @param keypath: Hierarchy keys, use "." connection.
         @param value:   Will set in self, according to keypath.
@@ -119,7 +128,7 @@ class GqylpyDict(dict):
             {'a': [{'b': 'B', 'c': 'C'}], 'd': [None, {'f': 'F'}]}
         """
 
-    def deepsetdefault(self, keypath: str, value: 'Any') -> 'Any':
+    def deepsetdefault(self, keypath: str, value: Any) -> Any:
         """
         @param keypath: Hierarchy keys, use "." connection.
         @param value:   Will set in self, if keypath not found.
@@ -151,14 +160,14 @@ class GqylpyDict(dict):
             cls,
             data:     dict,
             keypath:  str,
-            default: 'Optional[Any]'      = None,
+            default:  Optional[Any]      = None,
             *,
-            ignore:  'Union[list, tuple]' = None
-    ) -> 'Any':
+            ignore:   Union[list, tuple] = None
+    ) -> Any:
         """
-        "getdeep" based on "deepget", and is provided for built-in dict. If you
-        want to use "deepget" but don't want to or can't give up the original
-        data, can use "getdeep".
+        `getdeep` based on `deepget`, and is provided for built-in `dict`. If
+        you want to use `deepget` but don't want to or can't give up the
+        original data, can use `getdeep`.
 
         @param data:    Expectation is a multilevel dict.
         @param keypath: Hierarchy keys, use "." connection.
@@ -176,11 +185,11 @@ class GqylpyDict(dict):
         return cls.deepget(data, keypath, default, ignore=ignore)
 
     @classmethod
-    def setdeep(cls, data: dict, keypath: str, value: 'Any') -> None:
+    def setdeep(cls, data: dict, keypath: str, value: Any) -> None:
         """
-        "setdeep" based on "deepset", and is provided for built-in dict. If you
-        want to use "deepset" but don't want to or can't give up the original
-        data, can use "setdeep".
+        `setdeep` based on `deepset`, and is provided for built-in `dict`. If
+        you want to use `deepset` but don't want to or can't give up the
+        original data, can use `setdeep`.
 
         @param data:    Expectation is a multilevel dict.
         @param keypath: Hierarchy keys, use "." connection.
@@ -200,10 +209,58 @@ class GqylpyDict(dict):
 
 
 class _xe6_xad_x8c_xe7_x90_xaa_xe6_x80_xa1_xe7_x8e_xb2_xe8_x90_x8d_xe4_xba_x91:
+    """  QYYYQLLYYYYYYYQLYYQYYQQQYQQYQQQQQQQQQQQQQQQQQQQQQQYYYQQQQQQYL
+        YYYYQYLLQYLLYYQYYYYYYYQQYQYQYQQQQQQQQQQQQQQQQQQQQQQQYYYQQQQQQ
+        QYYYYLPQYLPLYYYLLYYYYYYYYQQQYQQQQQQQQQQQQQQQQQQQQQQQYYYYQQQQQP
+        QYYQLPLQYLLYYQPLLLYYYYYYQYYQYQQQQQQQQQQQQQQYQQQQQQQQYYQYQQQQQQP
+       QYYQYLLYYYLLYQYLLYYYYYYYYQYYQYQYYYQQQQQQQQQQYQQQQQQYQQYQYYQQQQQYP
+      LQYQYYYYQYYYYYQYYYYYYYYYYYYYYYQQYYYYYYYYYQQQQYQQQQQQYQQYQYYQQQQQQ P
+      QYQQYYYYQYYYQQQYYYYYYYYQYQYYYYQQYYYQYQYYQQQQYQQQQQQQYQQYQYYQQQQQQ P
+      QYQQYYYYQYYYQQQYYYYYYYYQYQYYYYYQYYYYQYYYQQQQYQQQQQQQYQQYQQYQQQQYYP
+      QYQYYYYYQYYYQQQ PYLLLYP PLYYYYYYQYYYYYYQQQQYYQQQQQQYQQYQQQYQQQQYQ
+      PQQYYYYYQYYQQYQQQQQQQQQQYP        PPLYQYQYQYQLQQQQQYQQYQQQYYQQQYY
+       QQYYYYYQQYQLYQQPQQQQQL QYL           PPYYLYYLQYQQYYQYQQQQYYQPQYL
+       YQYYYYQQQYQ  LYLQQQQQQYQQ           YQQQQQGQQQQQQYQYYQQQQYQPQYQ P
+      L QYYYYQQLYQ   Y YPYQQQQQ           LQQQQQL YQQQQYQQYQYQQYYQQYQP P
+        YYQYYQQ  Q    LQQQQQQY            YQYQQQQQQYYQYLQYQQYQQYYQYQL P
+     Y  LYQLQQPL Y     P  P                QLLQQQQQ Q  PQQQQYQQYYQQL P
+    P   PYQYQQQQPQ                         PQQQQQQY    QQYQYYQQYYQPP
+    L    QQQYQ YYYY              PQ           L  P    LPQYQYYQQLQ P
+    Y   PPQQYYL LYQL                                 PQLQYQQYQYQ  L
+    Y     QQYQPP PYQY        PQ                      Q  QQYQYQYL  L
+    Y     QQYYQ L  QYQP         PLLLLLYL           LQQ LQYYQQQP P L
+     L   PPLQYYQ Y  LQQQ                         LQYQ  QYYYQQ     P
+      L    Q  QYQ  Y  QQPYL                   PQYYYYPPQYYQQQP    L
+       L    L  PQQL   LYQ  PQP             QL PYYYPLQLYQ  QY P   Y
+         P   P    PQQP  QY  QLLQQP   LYYLQ   PQYPQQQP P  QY P   L
+                       PYQYYY           PQ  PQ      L   Q P    L
+              PQYLYYYPQ PLPL             L QY YQYYQYLYQQQ    P
+            PYLLLLLYYYQ P  L    P         PYL  PQYYLLLLLLLQ
+           LYPLLLLLLYYYY   Y  YQY     LLLPPY   LYYYLLLLLLLLY
+           YLLLYLLLLLLYYQ  Q              PQ  YYYLLLLLLLLLLYP
+          YLLLLLLLLLLLLLLYQQ              PYYQYYLLLLLLLLYYYLQ
+          QLLLLLLLLLLLLLLLLLYYQYP        YQYYLLLLLLLLLLLLLLLQ
+          YLLLLLLLLLLLLLLLLLLLYYYLLYYYLLLLLLLLLLLLLLLLLLLLLLYP
+         PLLLLLLLLLLLLLLLLLLLLLLLYLLLLLLLLLLLLLLLLLLLLLLLYLYLL
+         LLLLLLLLLLYYLLLLLLYLLLLLLLLLLLLLLLL GQYLPY LLLYLYLLLY
+         QLLLLYYLYLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLQYYYYLLQ
+         QLLLLLYYQYLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLQLYYLLLQ
+        LYLLYLLLQYYLLLLLLLLLLLLLLLLLLLLLLLLLLLLLYLLLLLQYYYYYLYQ
+        YLLLYYLLYQYLLLLLLLLLLLLLLLLLLLLLLLLLLLLYLLLLLYYYYQLLLLY
+        QLLLYYYYYQLLLLLLLLLLLLLLYLLLLLLLLLLLLLLLLLLLLYYYLQLLPLLQ
+        YLYLLQYYYQLLLLLLLLLLLLLLLLLLLLLLLLLLLLYYLLLLLYYQYYLLLLLQ
+       LYLLLLLYYYQLLYLLLLLLLLLLLLYLYLLYYLLLLYLLLLLLLYYYQQLLLLLLLY
+       YLLLLLLYYYQLLYLLLLLLLYLYLLLLLLLLLLLLLLLLLLLLYYYYQQLYLLLLLQ
+       QLLLYLLLQYQLQLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLYYYQYYLLLLLLLY
+       QLLLLLLLLQQYQLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLQYYQYYLLLLLLLQ
+       QLLLLLLLLLQQYLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLYYYYLLLLLLLLLYL
+       QLLLLYLYYLYQLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLQYYYLLLLLLLLLQ
+       YLLLLLLLYYLQLLLLLLLLLLLLLLLLLLLLLLLLLYLLLLLLLLYQYYLLLLLLLLLQ
+       QLLLLLYLYYYYLLLLLPLLLLLLLYLYLLLLLLLLLLLLLLLLLLLQYYLLLLLLLLYP
+       YYLYYLLYYYQLLLLLLLLYLLLLLLLLLLLLLLLLLLLLLLYLYLLYQYYLLLLLLYL
+        QLLLLLLYQYLLLLLLLLLLLLLLLLLLLLLYYLYLLLLLLLLLLLYQQQQQQQLYL  """
     __import__(f'{__name__}.g {__name__[7:]}')
     globals()['GqylpyDict'] = globals()[f'g {__name__[7:]}'].GqylpyDict
 
 
 gdict = GqylpyDict
-
-from typing import Iterator, Any, Union, Optional
