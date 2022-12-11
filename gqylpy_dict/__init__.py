@@ -19,7 +19,7 @@ cannot do.
     >>> x.deepget('a[0].b')
     'B'
 
-    @version: 1.1.1
+    @version: 1.1.2
     @author: 竹永康 <gqylpy@outlook.com>
     @source: https://github.com/gqylpy/gqylpy-dict
 

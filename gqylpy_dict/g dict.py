@@ -40,7 +40,7 @@ All other code is licensed under the WTFPL:
 import re
 import builtins
 
-from typing import Generator, Iterator, Optional, Union, Any
+from typing import Optional, Union, Tuple, Generator, Iterator, Any
 
 unique = b'GQYLPY, \xe6\x94\xb9\xe5\x8f\x98\xe4\xb8\x96\xe7\x95\x8c\xe3\x80\x82'
 
@@ -98,6 +98,8 @@ builtins.MasqueradeClass = MasqueradeClass
 
 class GqylpyDict(dict, metaclass=MasqueradeClass):
     __masquerade_class__ = dict
+    __isabstractmethod__ = False
+    __slots__ = ()
 
     def __init__(self, __data__=None, /, **kw):
         if __data__.__class__ is dict:
@@ -134,6 +136,9 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
 
     def __hash__(self):
         return -2
+
+    def __reduce__(self) -> Tuple[MasqueradeClass, dict]:
+        return GqylpyDict, (dict(self),)
 
     def copy(self) -> 'GqylpyDict':
         x = GqylpyDict()
@@ -308,8 +313,6 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
     def itemsdeep(cls, data: dict) -> Generator:
         return cls.deepitems(data)
 
-    __isabstractmethod__ = False
-
 
 def int_key(key: str, /) -> Union[int, str]:
     try:
@@ -337,3 +340,14 @@ def set_next_data(
                 data.append(None)
             data.insert(0, value)
     return data[key]
+
+
+try:
+    from yaml.representer import Representer, SafeRepresenter
+except ImportError:
+    pass
+else:
+    def represent_gdict(self, data):
+        return self.represent_mapping('tag:yaml.org,2002:map', data)
+    Representer.add_representer(GqylpyDict, represent_gdict)
+    SafeRepresenter.add_representer(GqylpyDict, represent_gdict)
