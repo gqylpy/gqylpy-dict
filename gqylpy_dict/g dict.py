@@ -102,7 +102,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
     __slots__ = ()
 
     def __init__(self, __data__=None, /, **kw):
-        if __data__.__class__ is dict:
+        if isinstance(__data__, dict):
             kw and __data__.update(kw)
         else:
             __data__ = kw
@@ -111,7 +111,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             self[name] = GqylpyDict(value)
 
     def __new__(cls, __data__={}, /, **kw):
-        if __data__.__class__ is dict:
+        if isinstance(__data__, dict):
             return dict.__new__(cls)
 
         if isinstance(__data__, (list, tuple, set, frozenset, Iterator)):
