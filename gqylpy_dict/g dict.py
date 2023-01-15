@@ -1,9 +1,9 @@
 """
-Copyright (c) 2022 GQYLPY <http://gqylpy.com>. All rights reserved.
+Copyright (c) 2022, 2023 GQYLPY <http://gqylpy.com>. All rights reserved.
 
 ────────────────────────────────────────────────────────────────────────────────
 
-Lines 48 through 96 is licensed under the Apache-2.0:
+Lines 48 through 93 is licensed under the Apache-2.0:
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -40,14 +40,14 @@ All other code is licensed under the WTFPL:
 import re
 import builtins
 
-from typing import Optional, Union, Tuple, Generator, Iterator, Any
+from typing import Optional, Union, Tuple, Type, Generator, Iterator, Any
 
 unique = b'GQYLPY, \xe6\x94\xb9\xe5\x8f\x98\xe4\xb8\x96\xe7\x95\x8c\xe3\x80\x82'
 
 
 class MasqueradeClass(type):
     """Masquerade one class as another.
-    Warning: Masquerade the class can cause unexpected problems, use caution."""
+    Warning, masquerade the class can cause unexpected problems, use caution."""
     __module__ = 'builtins'
 
     def __new__(mcs, __name__: str, __bases__: tuple, __dict__: dict):
@@ -55,7 +55,7 @@ class MasqueradeClass(type):
             __masquerade_class__ = __dict__['__masquerade_class__']
         except KeyError:
             raise AttributeError(
-                f'an instance of "{mcs.__name__}" must '
+                f'instance of "{mcs.__name__}" must '
                 'define "__masquerade_class__" attribute, '
                 'use to specify the class to disguise.'
             )
@@ -71,8 +71,8 @@ class MasqueradeClass(type):
         cls.__module__ = __masquerade_class__.__module__
 
         # cls.__qualname__ = __masquerade_class__.__qualname__
-        # Warning: Modified this attribute will cannot
-        # create the portable serialized representation.
+        # Warning: Modify this attribute will cannot create the portable
+        # serialized representation.
 
         if getattr(builtins, __masquerade_class__.__name__, None) is \
                 __masquerade_class__:
@@ -80,13 +80,10 @@ class MasqueradeClass(type):
 
         return cls
 
-    def __str__(cls):
-        return str(cls.__masquerade_class__)
-
     def __hash__(cls):
         # return hash(cls.__masquerade_class__)
-        # Warning: If masquerade the hash value, will not get the
-        # result from "copy.copy" and "copy.deepcopy" correctly.
+        # Warning: If masquerade the hash value, will not get the result from
+        # `copy.copy` and `copy.deepcopy` correctly.
         return super().__hash__()
 
     def __eq__(cls, o):
@@ -137,7 +134,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
     def __hash__(self):
         return -2
 
-    def __reduce__(self) -> Tuple[MasqueradeClass, dict]:
+    def __reduce__(self) -> Tuple[Type['GqylpyDict'], Tuple[dict]]:
         return GqylpyDict, (dict(self),)
 
     def copy(self) -> 'GqylpyDict':

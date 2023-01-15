@@ -19,12 +19,12 @@ cannot do.
     >>> x.deepget('a[0].b')
     'B'
 
-    @version: 1.1.3
+    @version: 1.1.4
     @author: 竹永康 <gqylpy@outlook.com>
     @source: https://github.com/gqylpy/gqylpy-dict
 
 ────────────────────────────────────────────────────────────────────────────────
-Copyright (c) 2022 GQYLPY <http://gqylpy.com>. All rights reserved.
+Copyright (c) 2022, 2023 GQYLPY <http://gqylpy.com>. All rights reserved.
 
 This file is licensed under the WTFPL:
 

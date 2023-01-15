@@ -1,8 +1,8 @@
-Copyright (c) 2022 GQYLPY <http://gqylpy.com>. All rights reserved.
+Copyright (c) 2022, 2023 GQYLPY <http://gqylpy.com>. All rights reserved.
 gqylpy-dict is released under the dual license WTFPL and Apache-2.0.
 
 ────────────────────────────────────────────────────────────────────────────────
-Lines 48-96 in the "gqylpy_dict/g dict.py" file are licensed under Apache-2.0:
+Lines 48-93 in the "gqylpy_dict/g dict.py" file are licensed under Apache-2.0:
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
