@@ -1,4 +1,4 @@
-from gqylpy_dict import gdict
+import gqylpy_dict as gdict
 
 x = {'a': [{'b': 'B'}]}
 x = gdict(x)

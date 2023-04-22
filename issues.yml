@@ -143,6 +143,9 @@
         if isinstance(__data__, dict) and __data__.__class__ is not gdict:
             return dict.__new__(cls)
     "
+    2023-04-22: "
+      已采用上述语句避免此问题，问题关闭。
+    "
 
 - issue: "deepsetdefault执行后应该返回原值还是转为gdict实例后的值"
   location: "GqylpyDict.deepsetdefault"
@@ -244,7 +247,7 @@
   location: GqylpyDict.deepget
   create: 2022-08-14
   labels: question
-  status: Pending
+  status: NotProcess
   description: "
     在某些情况下我们希望从字典中取到的值是某几个特定值中的其中一个，如果不是，将返回默认特定值。
   "
