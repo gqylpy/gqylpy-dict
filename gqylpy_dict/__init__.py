@@ -19,7 +19,7 @@ cannot do.
     >>> x.deepget('a[0].b')
     'B'
 
-    @version: 1.2
+    @version: 1.2.1
     @author: 竹永康 <gqylpy@outlook.com>
     @source: https://github.com/gqylpy/gqylpy-dict
 
@@ -49,7 +49,7 @@ class gdict(dict):
 
     def __new__(cls, __data__={}, /, **data):
         if isinstance(__data__, dict):
-            return __data__ if __data__.__class__ is cls else dict.__new__(cls)
+            return dict.__new__(cls)
 
         if isinstance(__data__, (list, tuple, set, frozenset)):
             return __data__.__class__(cls(v) for v in __data__)
@@ -92,6 +92,19 @@ class gdict(dict):
 
     def copy(self) -> 'gdict':
         """Get a replica instance."""
+
+    def deepcopy(self) -> 'gdict':
+        """
+        Incomplete deep copy, NOTE not the same as `copy.deepcopy`!
+
+        Copy only the instances of container types (only instances of `dict`,
+        `gdict`, `list`, `tuple`, `set`, and `frozenset`). Just pass `self`
+        directly to `gdict`, you can view the code blocks for `gdict.__new__`
+        and `gdict.__init__`.
+
+        Backstory https://github.com/gqylpy/gqylpy-dict/issues/9
+        """
+        return gdict(self)
 
     def deepget(
             self,
@@ -212,11 +225,10 @@ class gdict(dict):
 class _xe6_xad_x8c_xe7_x90_xaa_xe6_x80_xa1_xe7_x8e_xb2_xe8_x90_x8d_xe4_xba_x91:
     import sys
 
-    __import__(f'{__name__}.g {__name__[7:]}')
-    gdict = globals()[f'g {__name__[7:]}'].GqylpyDict
+    gdict = __import__(f'{__name__}.g {__name__[7:]}', fromlist=...).GqylpyDict
 
-    for gname in globals():
+    for gname, gvalue in globals().items():
         if gname[0] == '_' and gname != '__name__':
-            setattr(gdict, gname, globals()[gname])
+            setattr(gdict, gname, gvalue)
 
     sys.modules[__name__] = gdict.gdict = gdict

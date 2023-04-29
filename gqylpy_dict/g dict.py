@@ -110,7 +110,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
 
     def __new__(cls, __data__={}, /, **data):
         if isinstance(__data__, dict):
-            return __data__ if __data__.__class__ is cls else dict.__new__(cls)
+            return dict.__new__(cls)
 
         if isinstance(__data__, (list, tuple, set, frozenset)):
             return __data__.__class__(cls(v) for v in __data__)
@@ -140,6 +140,9 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
         for name, value in self.items():
             dict.__setitem__(copied, name, value)
         return copied
+
+    def deepcopy(self) -> 'GqylpyDict':
+        return GqylpyDict(self)
 
     def update(self, __data__: Optional[dict] = None, /, **data) -> None:
         try:
@@ -175,8 +178,14 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
                 try:
                     if key.isdigit() or key[0] == '-' and key[1:].isdigit():
                         value = value[int(key)]
-                    elif key in ('None', 'True', 'False', 'Ellipsis'):
-                        value = value[eval(key)]
+                    elif key == 'None':
+                        value = value[None]
+                    elif key == 'True':
+                        value = value[True]
+                    elif key == 'False':
+                        value = value[False]
+                    elif key == 'Ellipsis':
+                        value = value[...]
                     else:
                         return default
                 except (KeyError, IndexError):

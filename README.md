@@ -6,7 +6,7 @@
 
 # gqylpy-dict
 
-> `gqylpy-dict` 基于内置 `dict`，它是对内置 `dict` 的增强。`dict` 能做的它能做，`dict` 不能做的它更能做。
+> `gqylpy-dict` 基于内置 `dict`，它是对内置 `dict` 的增强。内置 `dict` 能做的它都能做，内置 `dict` 不能做的它更能做。
 
 <kbd>pip3 install gqylpy_dict</kbd>
 
