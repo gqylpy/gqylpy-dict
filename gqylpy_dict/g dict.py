@@ -3,7 +3,7 @@ Copyright (c) 2022, 2023 GQYLPY <http://gqylpy.com>. All rights reserved.
 
 ────────────────────────────────────────────────────────────────────────────────
 
-Lines 51 through 95 is licensed under the Apache-2.0:
+Lines 51 through 96 is licensed under the Apache-2.0:
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -70,8 +70,9 @@ class MasqueradeClass(type):
             mcs, __masquerade_class__.__name__, __bases__, __dict__
         )
 
-        mcs.__name__ = type.__name__
-        cls.__module__ = __masquerade_class__.__module__
+        mcs.__name__     = type.__name__
+        mcs.__qualname__ = type.__qualname__
+        cls.__module__   = __masquerade_class__.__module__
 
         # cls.__qualname__ = __masquerade_class__.__qualname__
         # Warning: Modify this attribute will cannot create the portable
@@ -97,7 +98,12 @@ builtins.MasqueradeClass = MasqueradeClass
 
 class GqylpyDict(dict, metaclass=MasqueradeClass):
     __masquerade_class__ = dict
-    __slots__ = ()
+
+    # __slots__ = ()
+    # ChatGPT-3.5 argues that the use of `__slots__` here is not very necessary
+    # and may cause some small performance loss. After preliminary analysis, we
+    # think what ChatGPT said may be correct. We will comment it out first and
+    # follow up later.
 
     def __init__(self, __data__=None, /, **data):
         if __data__ is None:
@@ -106,13 +112,13 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             __data__.update(data)
 
         for name, value in __data__.items():
-            dict.__setitem__(self, name, GqylpyDict(value))
+            self[name] = value
 
     def __new__(cls, __data__={}, /, **data):
         if isinstance(__data__, dict):
             return dict.__new__(cls)
 
-        if isinstance(__data__, (list, tuple, set, frozenset)):
+        if isinstance(__data__, (list, tuple)):
             return __data__.__class__(cls(v) for v in __data__)
 
         return __data__

@@ -19,7 +19,7 @@ cannot do.
     >>> x.deepget('a[0].b')
     'B'
 
-    @version: 1.2.1
+    @version: 1.2.2
     @author: 竹永康 <gqylpy@outlook.com>
     @source: https://github.com/gqylpy/gqylpy-dict
 
@@ -51,7 +51,7 @@ class gdict(dict):
         if isinstance(__data__, dict):
             return dict.__new__(cls)
 
-        if isinstance(__data__, (list, tuple, set, frozenset)):
+        if isinstance(__data__, (list, tuple)):
             return __data__.__class__(cls(v) for v in __data__)
 
         return __data__
@@ -63,7 +63,7 @@ class gdict(dict):
             __data__.update(data)
 
         for key, value in __data__.items():
-            dict.__setitem__(self, key, gdict(value))
+            self[key] = value
 
     def __getattr__(self, key: str, /) -> Any:
         return self[key]
@@ -97,10 +97,9 @@ class gdict(dict):
         """
         Incomplete deep copy, NOTE not the same as `copy.deepcopy`!
 
-        Copy only the instances of container types (only instances of `dict`,
-        `gdict`, `list`, `tuple`, `set`, and `frozenset`). Just pass `self`
-        directly to `gdict`, you can view the code blocks for `gdict.__new__`
-        and `gdict.__init__`.
+        Copy only the instances of container types (only instances of `gdict`,
+        `dict`, `list` and `tuple`). Just pass `self` directly to `gdict`, you
+        can view the code blocks for `gdict.__new__` and `gdict.__init__`.
 
         Backstory https://github.com/gqylpy/gqylpy-dict/issues/9
         """
