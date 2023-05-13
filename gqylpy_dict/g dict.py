@@ -112,7 +112,7 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
             __data__.update(data)
 
         for name, value in __data__.items():
-            self[name] = value
+            dict.__setitem__(self, name, GqylpyDict(value))
 
     def __new__(cls, __data__={}, /, **data):
         if isinstance(__data__, dict):
@@ -133,7 +133,9 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
         del self[name]
 
     def __setitem__(self, name: Hashable, value: Any, /) -> None:
-        dict.__setitem__(self, name, GqylpyDict(value))
+        if not isinstance(value, GqylpyDict):
+            value = GqylpyDict(value)
+        dict.__setitem__(self, name, value)
 
     def __hash__(self) -> int:
         return -2
@@ -141,11 +143,13 @@ class GqylpyDict(dict, metaclass=MasqueradeClass):
     def __reduce__(self) -> Tuple[Type['GqylpyDict'], Tuple[dict]]:
         return GqylpyDict, (dict(self),)
 
-    def copy(self) -> 'GqylpyDict':
+    def __copy__(self) -> 'GqylpyDict':
         copied = GqylpyDict()
         for name, value in self.items():
             dict.__setitem__(copied, name, value)
         return copied
+
+    copy = __copy__
 
     def deepcopy(self) -> 'GqylpyDict':
         return GqylpyDict(self)

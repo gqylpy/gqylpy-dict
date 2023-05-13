@@ -19,7 +19,7 @@ cannot do.
     >>> x.deepget('a[0].b')
     'B'
 
-    @version: 1.2.2
+    @version: 1.2.3
     @author: 竹永康 <gqylpy@outlook.com>
     @source: https://github.com/gqylpy/gqylpy-dict
 
@@ -46,6 +46,64 @@ from typing import Optional, Union, Tuple, List, Hashable, Any
 
 
 class gdict(dict):
+    """
+    The `gdict` class is a custom dictionary class that inherits from the
+    built-in Python `dict` class. One unique feature of the gdict class is that
+    it supports accessing and modifying key-value pairs in the dictionary using
+    dot notation ('.'). This means we can access values in the dictionary like
+    we would access attributes of an object. For example, given a dictionary
+    `{'name': 'Tom', 'age': 25}`, we can create a gdict object as follows:
+
+        >>> my_dict = gdict({'name': 'Tom', 'age': 25})
+
+    Using dot notation, we can access values in this dictionary:
+
+        >>> my_dict.name
+        'Tom'
+        >>> my_dict.age
+        25
+
+    We can even modify values in this dictionary using dot notation:
+
+        >>> my_dict.name = 'Jerry'
+
+    Now, the value of the "name" key in this dictionary has been updated to
+    "Jerry".
+
+    Additionally, `gdict` supports nested data structures, meaning the keys and
+    values stored in a `gdict` object can be dictionaries themselves. For
+    example:
+
+        >>> my_dict = gdict({
+        >>>     'personal_info': {'name': 'Tom', 'age': 25},
+        >>>     'work_info': {'company': 'ABC Inc.', 'position': 'Engineer'}
+        >>> })
+
+    We can access and modify values in nested dictionaries:
+
+        >>> my_dict.personal_info.name
+        'Tom'
+        >>> my_dict.work_info.position = 'Manager'
+
+    In addition to dot notation, we can also access and modify values in `gdict`
+    objects using traditional dictionary syntax:
+
+        >>> my_dict['personal_info']['name']
+        'Tom'
+        >>> my_dict['work_info']['position'] = 'Manager'
+
+    Finally, the `gdict` class has multiple input formats when instantiating an
+    object:
+
+        >>> my_dict = gdict({'name': 'Tom', 'age': 25})
+        >>> my_dict = gdict(name='Tom', age=25)
+        >>> my_dict = gdict([('name', 'Tom'), ('age', 25)])
+
+    The above is the main functions and usage of the `gdict` class. Overall, the
+    design and implementation of the `gdict` class provide a convenient and
+    extensible data structure that allows greater flexibility for operating on
+    Python dictionary objects.
+    """
 
     def __new__(cls, __data__={}, /, **data):
         if isinstance(__data__, dict):
@@ -57,13 +115,38 @@ class gdict(dict):
         return __data__
 
     def __init__(self, __data__=None, /, **data):
+        """
+        When we create a new `gdict` object, the class actually initializes a
+        Python `dict`. The initial value can be passed in as a constructor
+        parameter (which can be a `dict`, `list`, `tuple`, or other data type)
+        or passed in as keyword arguments.
+
+        The `gdict` class overrides the `__new__` and `__init__` methods, which
+        are responsible for accepting the constructor parameters and converting
+        them into `gdict` objects. The `__new__` method implements type checking
+        on the passed-in parameters, returning a new `dict` if it is a `dict`,
+        converting each element of a `list` or `tuple` into a `gdict` type and
+        returning a new `list` or `tuple`, or returning the data directly if it
+        is another data type. For other data types, we can also use keyword
+        arguments to pass them as initial values.
+
+        The `__init__` method accepts the newly converted `dict` and iterates
+        over each key-value pair, using the `__setitem__` method to add them to
+        the `dict`. In the `__setitem__` method, we use `value = gdict(value)`
+        to set the value as a `gdict` object, so that nested `gdict` objects are
+        created recursively when needed.
+
+        In this way, we can create a nested `gdict` of any level, with each
+        inner dictionary being a `gdict` object, thereby achieving the
+        conversion of any nested `dict`.
+        """
         if __data__ is None:
             __data__ = data
         else:
             __data__.update(data)
 
         for key, value in __data__.items():
-            self[key] = value
+            dict.__setitem__(self, key, gdict(value))
 
     def __getattr__(self, key: str, /) -> Any:
         return self[key]
@@ -75,7 +158,9 @@ class gdict(dict):
         del self[key]
 
     def __setitem__(self, key: Hashable, value: Any, /) -> None:
-        dict.__setitem__(self, key, gdict(value))
+        if not isinstance(value, gdict):
+            value = gdict(value)
+        dict.__setitem__(self, key, value)
 
     def __hash__(self) -> int:
         """
@@ -98,8 +183,7 @@ class gdict(dict):
         Incomplete deep copy, NOTE not the same as `copy.deepcopy`!
 
         Copy only the instances of container types (only instances of `gdict`,
-        `dict`, `list` and `tuple`). Just pass `self` directly to `gdict`, you
-        can view the code blocks for `gdict.__new__` and `gdict.__init__`.
+        `dict`, `list` and `tuple`).
 
         Backstory https://github.com/gqylpy/gqylpy-dict/issues/9
         """
