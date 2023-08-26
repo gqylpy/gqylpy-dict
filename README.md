@@ -1,12 +1,12 @@
-[<img alt='LOGO' src='http://www.gqylpy.com/static/img/favicon.ico' height='21' width='21'/>](http://www.gqylpy.com)
+[<img alt='LOGO' src='http://gqylpy.com/static/img/favicon.ico' height='21' width='21'/>](http://www.gqylpy.com)
 [![Release](https://img.shields.io/github/release/gqylpy/gqylpy-dict.svg?style=flat-square')](https://github.com/gqylpy/gqylpy-dict/releases/latest)
 [![Python Versions](https://img.shields.io/pypi/pyversions/gqylpy_dict)](https://pypi.org/project/gqylpy_dict)
 [![License](https://img.shields.io/pypi/l/gqylpy_dict)](https://github.com/gqylpy/gqylpy-dict/blob/master/LICENSE)
-[![Downloads](https://pepy.tech/badge/gqylpy_dict/month)](https://pepy.tech/project/gqylpy_dict)
+[![Downloads](https://static.pepy.tech/badge/gqylpy_dict)](https://pepy.tech/project/gqylpy_dict)
 
 # gqylpy-dict
 
-> `gqylpy-dict` 基于内置 `dict`，它是对内置 `dict` 的增强。内置 `dict` 能做的它都能做，内置 `dict` 不能做的它更能做。_（专为神经病设计）_
+> `gqylpy-dict` 基于内置 `dict`，它是对内置 `dict` 的增强。内置 `dict` 能做的它都能做，内置 `dict` 不能做的它更能做。_（专为神经患者设计）_
 
 <kbd>pip3 install gqylpy_dict</kbd>
 

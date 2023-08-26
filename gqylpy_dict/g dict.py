@@ -3,7 +3,7 @@ Copyright (c) 2022, 2023 GQYLPY <http://gqylpy.com>. All rights reserved.
 
 ────────────────────────────────────────────────────────────────────────────────
 
-Lines 51 through 96 is licensed under the Apache-2.0:
+Lines 51 through 100 is licensed under the Apache-2.0:
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -49,19 +49,21 @@ __unique__: Final = object()
 
 
 class MasqueradeClass(type):
-    """Masquerade one class as another.
-    Warning, masquerade the class can cause unexpected problems, use caution."""
-    __module__ = 'builtins'
+    """
+    Masquerade one class as another (default masquerade as first parent class).
+    Warning, masquerade the class can cause unexpected problems, use caution.
+    """
+    __module__   = type.__module__
+
+    __qualname__ = type.__qualname__
+    # Warning, masquerade (modify) this attribute will cannot create the
+    # portable serialized representation. In practice, however, this metaclass
+    # often does not need to be serialized, so we try to ignore it.
 
     def __new__(mcs, __name__: str, __bases__: tuple, __dict__: dict):
-        try:
-            __masquerade_class__ = __dict__['__masquerade_class__']
-        except KeyError:
-            raise AttributeError(
-                f'instance of "{mcs.__name__}" must '
-                'define "__masquerade_class__" attribute, '
-                'use to specify the class to disguise.'
-            ) from None
+        __masquerade_class__: Type[object] = __dict__.setdefault(
+            '__masquerade_class__', __bases__[0] if __bases__ else object
+        )
 
         if not isinstance(__masquerade_class__, type):
             raise TypeError('"__masquerade_class__" is not a class.')
@@ -70,21 +72,22 @@ class MasqueradeClass(type):
             mcs, __masquerade_class__.__name__, __bases__, __dict__
         )
 
-        mcs.__name__     = type.__name__
-        mcs.__qualname__ = type.__qualname__
-        cls.__module__   = __masquerade_class__.__module__
+        if cls.__module__ != __masquerade_class__.__module__:
+            setattr(sys.modules[__masquerade_class__.__module__], __name__, cls)
+
+        cls.__real_name__        = __name__
+        cls.__real_module__      = __package__
+        cls.__masquerade_class__ = __masquerade_class__
+        cls.__module__           = __masquerade_class__.__module__
 
         # cls.__qualname__ = __masquerade_class__.__qualname__
-        # Warning: Modify this attribute will cannot create the portable
-        # serialized representation.
-
-        if getattr(builtins, __masquerade_class__.__name__, None) is \
-                __masquerade_class__:
-            setattr(builtins, __name__, cls)
+        # Masquerade (modify) this attribute will cannot create the portable
+        # serialized representation. We have not yet found an effective
+        # solution, and we will continue to follow up.
 
         return cls
 
-    def __hash__(cls):
+    def __hash__(cls) -> int:
         if sys._getframe(1).f_code in (deepcopy.__code__, copy.__code__):
             return type.__hash__(cls)
         return hash(cls.__masquerade_class__)
@@ -93,17 +96,11 @@ class MasqueradeClass(type):
         return True if o is cls.__masquerade_class__ else type.__eq__(cls, o)
 
 
+MasqueradeClass.__name__ = type.__name__
 builtins.MasqueradeClass = MasqueradeClass
 
 
 class GqylpyDict(dict, metaclass=MasqueradeClass):
-    __masquerade_class__ = dict
-
-    # __slots__ = ()
-    # ChatGPT-3.5 argues that the use of `__slots__` here is not very necessary
-    # and may cause some small performance loss. After preliminary analysis, we
-    # think what ChatGPT said may be correct. We will comment it out first and
-    # follow up later.
 
     def __init__(self, __data__=None, /, **data):
         if __data__ is None:

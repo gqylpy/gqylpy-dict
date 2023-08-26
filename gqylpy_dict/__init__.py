@@ -19,7 +19,7 @@ cannot do.
     >>> x.deepget('a[0].b')
     'B'
 
-    @version: 1.2.3
+    @version: 1.2.4
     @author: 竹永康 <gqylpy@outlook.com>
     @source: https://github.com/gqylpy/gqylpy-dict
 
@@ -106,15 +106,6 @@ class gdict(dict):
     """
 
     def __new__(cls, __data__={}, /, **data):
-        if isinstance(__data__, dict):
-            return dict.__new__(cls)
-
-        if isinstance(__data__, (list, tuple)):
-            return __data__.__class__(cls(v) for v in __data__)
-
-        return __data__
-
-    def __init__(self, __data__=None, /, **data):
         """
         When we create a new `gdict` object, the class actually initializes a
         Python `dict`. The initial value can be passed in as a constructor
@@ -140,6 +131,15 @@ class gdict(dict):
         inner dictionary being a `gdict` object, thereby achieving the
         conversion of any nested `dict`.
         """
+        if isinstance(__data__, dict):
+            return dict.__new__(cls)
+
+        if isinstance(__data__, (list, tuple)):
+            return __data__.__class__(cls(v) for v in __data__)
+
+        return __data__
+
+    def __init__(self, __data__=None, /, **data):
         if __data__ is None:
             __data__ = data
         else:
