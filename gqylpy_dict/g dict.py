@@ -3,7 +3,7 @@ Copyright (c) 2022, 2023 GQYLPY <http://gqylpy.com>. All rights reserved.
 
 ────────────────────────────────────────────────────────────────────────────────
 
-Lines 51 through 100 is licensed under the Apache-2.0:
+Lines 51 through 99 is licensed under the Apache-2.0:
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -75,10 +75,9 @@ class MasqueradeClass(type):
         if cls.__module__ != __masquerade_class__.__module__:
             setattr(sys.modules[__masquerade_class__.__module__], __name__, cls)
 
-        cls.__real_name__        = __name__
-        cls.__real_module__      = __package__
-        cls.__masquerade_class__ = __masquerade_class__
-        cls.__module__           = __masquerade_class__.__module__
+        cls.__real_name__   = __name__
+        cls.__real_module__ = cls.__module__
+        cls.__module__      = __masquerade_class__.__module__
 
         # cls.__qualname__ = __masquerade_class__.__qualname__
         # Masquerade (modify) this attribute will cannot create the portable

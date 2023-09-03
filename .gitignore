@@ -106,3 +106,5 @@ ENV/
 conda-requirements.txt
 
 tests/
+
+changelog.yml
