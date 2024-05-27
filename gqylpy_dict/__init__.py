@@ -1,7 +1,6 @@
 """
-The `gqylpy_dict` based on the built-in `dict`, it is an enhancement of the
-built-in `dict`. It can do anything `dict` can do, and can do more what `dict`
-cannot do.
+`gqylpy-dict` is based on the built-in `dict` and serves as an enhancement
+to it. It can do everything the built-in `dict` can do, and even more.
 
     >>> from gqylpy_dict import gdict
 
@@ -19,12 +18,12 @@ cannot do.
     >>> x.deepget('a[0].b')
     'B'
 
-    @version: 1.2.5
+    @version: 1.2.6
     @author: 竹永康 <gqylpy@outlook.com>
     @source: https://github.com/gqylpy/gqylpy-dict
 
 ────────────────────────────────────────────────────────────────────────────────
-Copyright (c) 2022, 2023 GQYLPY <http://gqylpy.com>. All rights reserved.
+Copyright (c) 2022-2024 GQYLPY <http://gqylpy.com>. All rights reserved.
 
 This file is licensed under the WTFPL:
 
