@@ -18,12 +18,15 @@ setuptools.setup(
     license='WTFPL,Apache-2.0',
     url='http://gqylpy.com',
     project_urls={'Source': source},
-    description='基于内置 dict，它是对内置 dict 的增强。内置 dict 能做的它都能做，内置'
-                ' dict 不能做的它更能做。',
+    description='''
+        `gqylpy-dict` is based on the built-in `dict` and serves as an
+        enhancement to it. It can do everything the built-in `dict` can do, and
+        even more.
+    '''.strip().replace('\n       ', ''),
     long_description=open('README.md', encoding='utf8').read(),
     long_description_content_type='text/markdown',
     packages=[g.__package__],
-    python_requires='>=3.8, <4',
+    python_requires='>=3.8',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -37,6 +40,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
-        'Programming Language :: Python :: 3.12'
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13'
     ]
 )

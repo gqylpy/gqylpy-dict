@@ -5,8 +5,9 @@
 [![Downloads](https://static.pepy.tech/badge/gqylpy_dict)](https://pepy.tech/project/gqylpy_dict)
 
 # gqylpy-dict
+English | [中文](https://github.com/gqylpy/gqylpy-dict/blob/master/README_CN.md)
 
-> `gqylpy-dict` 基于内置 `dict`，它是对内置 `dict` 的增强。内置 `dict` 能做的它都能做，内置 `dict` 不能做的它更能做。_（专为神经患者设计）_
+> `gqylpy-dict` is based on the built-in `dict` and serves as an enhancement to it. It can do everything the built-in `dict` can do, and even more. _(Designed specifically for the neurologically diverse)_
 
 <kbd>pip3 install gqylpy_dict</kbd>
 
@@ -28,26 +29,31 @@ False
 'B'
 ```
 
-我们再详细地介绍一下 `gdict` 类的功能和用法。
+Let's delve deeper into the functionalities and usages of the `gdict` class.
 
-首先，`gdict` 类是一个自定义字典类，继承自 Python 内置的 `dict` 类。`gdict` 类有一个特殊的功能是支持点操作符（`.`）访问和修改字典中的键值对。这意味着，我们可以像访问对象的属性一样访问字典中的值。比如，有一个字典 `{'name': 'Tom', 'age': 25}`，我们可以这样定义一个 `gdict` 对象：
+Firstly, the `gdict` class is a custom dictionary class that inherits from Python's built-in `dict` class. A special feature of `gdict` is its support for accessing and modifying key-value pairs in the dictionary using dot notation (`.`). This means we can access dictionary values as if they were object attributes. For instance, given a dictionary `{'name': 'Tom', 'age': 25}`, we can define a `gdict` object as follows:
+
 ```python
 my_dict = gdict({'name': 'Tom', 'age': 25})
 ```
 
-通过点操作符，我们可以访问这个字典的值：
+Using dot notation, we can access the dictionary values:
+
 ```python
 my_dict.name  # 'Tom'
 my_dict.age  # 25
 ```
 
-我们甚至可以修改这个字典的值：
+We can even modify the dictionary values:
+
 ```python
 my_dict.name = 'Jerry'
 ```
-此时，这个字典中 `'name'` 这个键对应的值已经被修改为 `'Jerry'`。
 
-另外，`gdict` 还支持多层嵌套的数据结构，也就是说，`gdict` 对象中存储的键和值也可以是字典类型。比如：
+At this point, the value associated with the `'name'` key in the dictionary has been changed to `'Jerry'`.
+
+Additionally, `gdict` supports multi-level nested data structures, meaning the keys and values stored in a `gdict` object can also be dictionaries. For example:
+
 ```python
 my_dict = gdict({
     'personal_info': {'name': 'Tom', 'age': 25},
@@ -55,23 +61,26 @@ my_dict = gdict({
 })
 ```
 
-我们可以访问和修改嵌套字典中的值：
+We can access and modify values in nested dictionaries:
+
 ```python
 my_dict.personal_info.name  # 'Tom'
 my_dict.work_info.position = 'Manager'
 ```
 
-除了点操作符，我们也可以使用普通的字典操作方式访问和修改 `gdict` 对象中的值：
+Aside from dot notation, we can also access and modify values in a `gdict` object using traditional dictionary access methods:
+
 ```python
 my_dict['personal_info']['name']  # 'Tom'
 my_dict['work_info']['position'] = 'Manager'
 ```
 
-最后，`gdict` 类在实例化时支持多种不同的输入方式：
+Lastly, the `gdict` class supports various input formats during instantiation:
+
 ```python
 my_dict = gdict({'name': 'Tom', 'age': 25})
 my_dict = gdict(name='Tom', age=25)
 my_dict = gdict([('name', 'Tom'), ('age', 25)])
 ```
 
-以上就是 `gdict` 类的主要功能和用法。总体来说，`gdict` 类的设计和实现提供了一种方便的、可扩展的数据结构，可以更加灵活地操作 Python 字典对象。
+In summary, the design and implementation of the `gdict` class provide a convenient and extensible data structure that allows for more flexible manipulation of Python dictionary objects.
